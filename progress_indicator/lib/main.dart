@@ -1,15 +1,20 @@
-import 'package:flutter/foundation.dart';
+import 'dart:collection';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb &&
-      kDebugMode &&
-      defaultTargetPlatform == TargetPlatform.android) {
-    await InAppWebViewController.setWebContentsDebuggingEnabled(kDebugMode);
-  }
+  WebView.debugLoggingSettings.enabled = false;
   runApp(const MaterialApp(home: MyApp()));
+}
+
+Object? interceptRequest(WebUri uri,WebResourceRequest request){
+  if(uri.path.startsWith("/kcs2/")){
+
+  }
+  return null;
 }
 
 enum ProgressIndicatorType { circular, linear }
@@ -23,51 +28,41 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final GlobalKey webViewKey = GlobalKey();
+  InAppWebViewSettings webViewSetting = InAppWebViewSettings(
+    javaScriptEnabled: true,
+    useShouldInterceptRequest: true,
 
+    userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+  );
   InAppWebViewController? webViewController;
   double progress = 0;
-  ProgressIndicatorType type = ProgressIndicatorType.linear;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Progress Indicator: ${type.name}",
+          title: Text("KanColle",
               style: const TextStyle(fontSize: 18)),
           actions: [
             IconButton(
                 onPressed: () async {
                   await webViewController?.loadUrl(
-                      urlRequest:
-                          URLRequest(url: WebUri("https://flutter.dev")));
+                      urlRequest: URLRequest(
+                          url: WebUri(
+                              "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854/")));
                 },
                 icon: const Icon(Icons.home)),
             IconButton(
                 onPressed: () async {
-                  await webViewController?.clearCache();
                   await webViewController?.reload();
                 },
                 icon: const Icon(Icons.refresh)),
-            PopupMenuButton(
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  child: Text(ProgressIndicatorType.linear.name),
-                  onTap: () {
-                    setState(() {
-                      type = ProgressIndicatorType.linear;
-                    });
-                  },
-                ),
-                PopupMenuItem(
-                  child: Text(ProgressIndicatorType.circular.name),
-                  onTap: () {
-                    setState(() {
-                      type = ProgressIndicatorType.circular;
-                    });
-                  },
-                ),
-              ],
-            ),
+            IconButton(
+                onPressed: () async {
+                  print("button");
+                },
+                icon: const Icon(Icons.account_circle))
           ],
         ),
         body: Column(children: <Widget>[
@@ -75,39 +70,31 @@ class _MyAppState extends State<MyApp> {
               child: Stack(children: [
             InAppWebView(
               key: webViewKey,
-              initialUrlRequest: URLRequest(url: WebUri("https://flutter.dev")),
-              onWebViewCreated: (controller) {
+              initialSettings: webViewSetting,
+              initialUrlRequest: URLRequest(
+                  url: WebUri(
+                      "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854/")),
+              initialUserScripts: UnmodifiableListView<UserScript>([
+                UserScript(
+                  source: '',
+                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+                ),
+              ]),
+              onWebViewCreated: (InAppWebViewController controller) {
                 webViewController = controller;
               },
-              onProgressChanged: (controller, progress) {
-                setState(() {
-                  this.progress = progress / 100;
-                });
+              onLoadStop: (InAppWebViewController controller, WebUri? uri) {},
+              shouldInterceptRequest: (
+                  controller,
+                  WebResourceRequest request,
+                  ) async {
+                print('androidShouldInterceptRequest: $request');
+                return null;
               },
+
             ),
-            progress < 1.0 ? getProgressIndicator(type) : Container(),
           ])),
         ]));
   }
 
-  Widget getProgressIndicator(ProgressIndicatorType type) {
-    switch (type) {
-      case ProgressIndicatorType.circular:
-        return Center(
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              color: Colors.white.withAlpha(70),
-            ),
-            child: const CircularProgressIndicator(),
-          ),
-        );
-      case ProgressIndicatorType.linear:
-      default:
-        return LinearProgressIndicator(
-          value: progress,
-        );
-    }
-  }
 }
