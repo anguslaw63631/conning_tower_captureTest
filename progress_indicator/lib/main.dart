@@ -1,6 +1,5 @@
 import 'dart:collection';
-import 'dart:ffi';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -10,9 +9,34 @@ Future main() async {
   runApp(const MaterialApp(home: MyApp()));
 }
 
-Object? interceptRequest(WebUri uri,WebResourceRequest request){
-  if(uri.path.startsWith("/kcs2/")){
+Future<WebResourceResponse?> interceptRequest(
+    WebResourceRequest request) async {
+  if (request.method == 'POST') {
+    if (request.url.path.contains('get_incentive')) {
+      return null;
+    }
+    var kcResponse = await http.post(request.url, headers: request.headers);
+    print("KCA");
+    print("URL");
+    print(request);
 
+    print("status:");
+    print(kcResponse.headers);
+    print(kcResponse.request);
+    print(kcResponse.reasonPhrase);
+    print(kcResponse.contentLength);
+    print(kcResponse.isRedirect);
+    print(kcResponse.persistentConnection);
+    print("body:");
+    print(kcResponse.body);
+    print("KCA END");
+    return WebResourceResponse(
+        contentEncoding: 'gzip',
+        contentType: 'text/plain',
+        data: kcResponse.bodyBytes,
+        headers: kcResponse.headers,
+        reasonPhrase: kcResponse.reasonPhrase,
+        statusCode: kcResponse.statusCode);
   }
   return null;
 }
@@ -31,7 +55,6 @@ class _MyAppState extends State<MyApp> {
   InAppWebViewSettings webViewSetting = InAppWebViewSettings(
     javaScriptEnabled: true,
     useShouldInterceptRequest: true,
-
     userAgent:
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
   );
@@ -42,8 +65,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("KanColle",
-              style: const TextStyle(fontSize: 18)),
+          title: Text("KanColle", style: const TextStyle(fontSize: 18)),
           actions: [
             IconButton(
                 onPressed: () async {
@@ -74,27 +96,23 @@ class _MyAppState extends State<MyApp> {
               initialUrlRequest: URLRequest(
                   url: WebUri(
                       "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854/")),
-              initialUserScripts: UnmodifiableListView<UserScript>([
-                UserScript(
-                  source: '',
-                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
-                ),
-              ]),
               onWebViewCreated: (InAppWebViewController controller) {
                 webViewController = controller;
               },
-              onLoadStop: (InAppWebViewController controller, WebUri? uri) {},
               shouldInterceptRequest: (
-                  controller,
-                  WebResourceRequest request,
-                  ) async {
-                print('androidShouldInterceptRequest: $request');
+                controller,
+                WebResourceRequest request,
+              ) async {
+                //print('androidShouldInterceptRequest: $request');
+                if (request.url.path.contains("/kcsapi/")) {
+                  Future<WebResourceResponse?> temp = interceptRequest(request);
+                  print("Return custom");
+                  return null;
+                }
                 return null;
               },
-
             ),
           ])),
         ]));
   }
-
 }
