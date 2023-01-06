@@ -1,133 +1,154 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:http/http.dart' as http;
+
+void printRequestInfo(WebResourceRequest request) {
+  print("==========");
+  print("KCA Request Info:");
+  print("KCA Request method:");
+  print(request.method);
+  print("KCA Request headers:");
+  print(request.headers);
+  print("KCA Request url:");
+  print(request.url);
+  print("KCA Request isRedirect:");
+  print(request.isRedirect);
+  print("KCA Request isForMainFrame:");
+  print(request.isForMainFrame);
+  print("KCA Request hasGesture:");
+  print(request.hasGesture);
+  print("==========");
+}
 
 Future<WebResourceResponse?> interceptRequest(
     WebResourceRequest orgRequest) async {
-  if (orgRequest.method == 'POST') {
-    if (orgRequest.url.path.contains('get_incentive')) {
-      return null;
-    }
-    var kcResponse = await http.post(orgRequest.url, headers: orgRequest.headers);
-    print("KCA");
-    print("URL");
-    print(orgRequest);
+  printRequestInfo(orgRequest);
+  var kcResponse = await http.post(orgRequest.url, headers: orgRequest.headers);
 
-    print("status:");
-    print(kcResponse.headers);
-    print(kcResponse.request);
-    print(kcResponse.reasonPhrase);
-    print(kcResponse.contentLength);
-    print(kcResponse.isRedirect);
-    print(kcResponse.persistentConnection);
-    print("body:");
-    print(kcResponse.body);
-    print("KCA END");
-    return WebResourceResponse(
-        contentEncoding: 'gzip',
-        contentType: 'text/plain',
-        data: kcResponse.bodyBytes,
-        headers: kcResponse.headers,
-        reasonPhrase: kcResponse.reasonPhrase,
-        statusCode: kcResponse.statusCode);
-  }
-  return null;
+  print("==========");
+  print("KCA Response By http Info:");
+  print("KCA Response headers:");
+  print(kcResponse.headers);
+  print("KCA Response request:");
+  print(kcResponse.request);
+  print("KCA Response reasonPhrase:");
+  print(kcResponse.reasonPhrase);
+  print("KCA Response contentLength:");
+  print(kcResponse.contentLength);
+  print("KCA Response isRedirect:");
+  print(kcResponse.isRedirect);
+  print("KCA Response persistentConnection:");
+  print(kcResponse.persistentConnection);
+  print("KCA Response body:");
+  print(kcResponse.body);
+  print("KCA Response statusCode:");
+  print(kcResponse.statusCode);
+  print("==========");
+
+  return WebResourceResponse(
+      contentEncoding: 'gzip',
+      contentType: 'text/plain',
+      data: kcResponse.bodyBytes,
+      headers: kcResponse.headers,
+      reasonPhrase: kcResponse.reasonPhrase,
+      statusCode: kcResponse.statusCode);
 }
 
 Future<WebResourceResponse?> interceptRequestByDIO(
     WebResourceRequest orgRequest) async {
-  if (orgRequest.method == 'POST') {
-    if (orgRequest.url.path.contains('get_incentive')) {
-      return null;
-    }
+  printRequestInfo(orgRequest);
 
-    Response kcResponse;
-    var dio = Dio(BaseOptions(
-        method: 'POST',
-        headers: orgRequest.headers
-    ));
-    print("KCA Q");
-    kcResponse = await dio.post(orgRequest.url.path);
-    print("KCA Z");
-    print("KCA");
-    print("KC request hasGesture");
-    print(orgRequest.hasGesture);
-    print("KC request headers");
-    print(orgRequest.headers);
-    print("KC request isForMainFrame");
-    print(orgRequest.isForMainFrame);
-    print("KC request isRedirect");
-    print(orgRequest.isRedirect);
-    print("KC request method");
-    print(orgRequest.method);
-    print("KC request url");
-    print(orgRequest.url);
+  Response kcResponse;
+  var dio = Dio(BaseOptions(method: 'POST', headers: orgRequest.headers));
+  kcResponse = await dio.post(orgRequest.url.path);
 
-    print("KC response headers:");
-    print(kcResponse.headers);
-    print("KC response request:");
-    print(kcResponse.requestOptions);
-    print("KC response isRedirect:");
-    print(kcResponse.isRedirect);
-    print("KC response data:");
-    print(kcResponse.data);
-    print("KC response extra:");
-    print(kcResponse.extra);
-
-    print("KC response redirects:");
-    print(kcResponse.redirects);
-    print("KC response statusCode:");
-    print(kcResponse.statusCode);
-    print("KC response statusMessage:");
-    print(kcResponse.statusMessage);
-    return WebResourceResponse(
-        contentEncoding: 'gzip',
-        contentType: 'text/plain',
-        data: kcResponse.data,
-
-
-        statusCode: kcResponse.statusCode);
-
-  }
-  return null;
+  print("==========");
+  print("KCA Response By DIO:");
+  print("KCA Response statusCode:");
+  print(kcResponse.statusCode);
+  print("KCA Response isRedirect:");
+  print(kcResponse.isRedirect);
+  print("KCA Response headers:");
+  print(kcResponse.headers);
+  print("KCA Response statusMessage:");
+  print(kcResponse.statusMessage);
+  print("KCA Response data:");
+  print(kcResponse.data);
+  print("KCA Response redirects:");
+  print(kcResponse.redirects);
+  print("KCA Response extra:");
+  print(kcResponse.extra);
+  print("KCA Response requestOptions:");
+  print(kcResponse.requestOptions);
+  print("==========");
+  return WebResourceResponse(
+      contentEncoding: 'gzip',
+      contentType: 'text/plain',
+      data: kcResponse.data,
+      statusCode: kcResponse.statusCode);
 }
 
 Future<WebResourceResponse?> interceptRequestByHttpclient(
     WebResourceRequest orgRequest) async {
+  Future<WebResourceResponse?> kcResponseForReturn;
+  printRequestInfo(orgRequest);
+  var client = HttpClient();
+  try {
+    HttpClientRequest request = await client.postUrl(orgRequest.url);
 
-  Future<WebResourceResponse?> finalresult;
-  if (orgRequest.method == 'POST') {
-    if (orgRequest.url.path.contains('get_incentive')) {
-      return null;
-    }
-    var client = HttpClient();
-    try {
-      HttpClientRequest request = await client.postUrl(orgRequest.url);
+    HttpClientResponse kcResponse = await request.close();
 
-      // Optionally set up headers...
-      // Optionally write to the request object...
-      HttpClientResponse kcResponse = await request.close();
+    // Process the response
+    var kcResponseBody = await kcResponse.transform(utf8.decoder).join();
+    Uint8List result = json.decode(kcResponseBody);
 
-      print("KCA");
-      print(kcResponse.statusCode);
-      // Process the response
-      var responseBody = await kcResponse.transform(utf8.decoder).join();
+    print("==========");
+    print("KCA Response By HttpClient:");
+    print("KCA Response redirects:");
+    print(kcResponse.redirects);
+    print("KCA Response headers:");
+    print(kcResponse.headers);
+    print("KCA Response isRedirect:");
+    print(kcResponse.isRedirect);
+    print("KCA Response statusCode:");
+    print(kcResponse.statusCode);
+    print("KCA Response certificate:");
+    print(kcResponse.certificate);
+    print("KCA Response compressionState:");
+    print(kcResponse.compressionState);
+    print("KCA Response connectionInfo:");
+    print(kcResponse.connectionInfo);
+    print("KCA Response contentLength:");
+    print(kcResponse.contentLength);
+    print("KCA Response cookies:");
+    print(kcResponse.cookies);
+    print("KCA Response persistentConnection:");
+    print(kcResponse.persistentConnection);
+    print("KCA Response reasonPhrase:");
+    print(kcResponse.reasonPhrase);
+    print("KCA Response first:");
+    print(kcResponse.first);
+    print("KCA Response isBroadcast:");
+    print(kcResponse.isBroadcast);
+    print("KCA Response last:");
+    print(kcResponse.last);
+    print("KCA Response length:");
+    print(kcResponse.length);
+    print("KCA Response single:");
+    print(kcResponse.single);
+    print("==========");
 
-      Uint8List result = json.decode(responseBody);
-      print(responseBody);
-      finalresult = WebResourceResponse(
-          contentEncoding: 'gzip',
-          contentType: 'text/plain',
-          data: result,
-          statusCode: kcResponse.statusCode) as Future<WebResourceResponse?>;
-    } finally {
-      client.close();
-    }
-    return finalresult;
-
+    kcResponseForReturn = WebResourceResponse(
+        contentEncoding: 'gzip',
+        contentType: 'text/plain',
+        data: result,
+        statusCode: kcResponse.statusCode) as Future<WebResourceResponse?>;
+  } finally {
+    client.close();
   }
-  return null;
+  return kcResponseForReturn;
 }

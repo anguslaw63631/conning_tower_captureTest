@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+
 import 'kcaHandler.dart';
+
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   WebView.debugLoggingSettings.enabled = false;
@@ -69,12 +71,14 @@ class _MyAppState extends State<MyApp> {
                 controller,
                 WebResourceRequest request,
               ) async {
-                if (request.url.path.contains("/kcsapi/")) {
+                if (request.url.path.contains("/kcsapi/") ||
+                    !request.url.path.contains('get_incentive')) {
                   //print('androidShouldInterceptRequest: $request');
                   //Future<WebResourceResponse?> customResponse = interceptRequest(request);
-                  //Future<WebResourceResponse?> customResponse = interceptRequestByDIO(request);
-                  Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
-                  if(customResponse!=null){
+                  Future<WebResourceResponse?> customResponse =
+                      interceptRequestByDIO(request);
+                  //Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
+                  if (customResponse != null) {
                     print("KCA: Return customResponse");
                     return customResponse;
                   }
