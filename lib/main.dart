@@ -71,7 +71,9 @@ class _MyAppState extends State<MyApp> {
               ) async {
                 if (request.url.path.contains("/kcsapi/")) {
                   //print('androidShouldInterceptRequest: $request');
-                  Future<WebResourceResponse?> customResponse = interceptRequest(request);
+                  //Future<WebResourceResponse?> customResponse = interceptRequest(request);
+                  //Future<WebResourceResponse?> customResponse = interceptRequestByDIO(request);
+                  Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
                   if(customResponse!=null){
                     print("KCA: Return customResponse");
                     return customResponse;

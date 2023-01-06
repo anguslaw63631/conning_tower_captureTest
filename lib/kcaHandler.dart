@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:dio/dio.dart';
+
 Future<WebResourceResponse?> interceptRequest(
     WebResourceRequest orgRequest) async {
   if (orgRequest.method == 'POST') {
@@ -86,6 +90,43 @@ Future<WebResourceResponse?> interceptRequestByDIO(
 
 
         statusCode: kcResponse.statusCode);
+
+  }
+  return null;
+}
+
+Future<WebResourceResponse?> interceptRequestByHttpclient(
+    WebResourceRequest orgRequest) async {
+
+  Future<WebResourceResponse?> finalresult;
+  if (orgRequest.method == 'POST') {
+    if (orgRequest.url.path.contains('get_incentive')) {
+      return null;
+    }
+    var client = HttpClient();
+    try {
+      HttpClientRequest request = await client.postUrl(orgRequest.url);
+
+      // Optionally set up headers...
+      // Optionally write to the request object...
+      HttpClientResponse kcResponse = await request.close();
+
+      print("KCA");
+      print(kcResponse.statusCode);
+      // Process the response
+      var responseBody = await kcResponse.transform(utf8.decoder).join();
+
+      Uint8List result = json.decode(responseBody);
+      print(responseBody);
+      finalresult = WebResourceResponse(
+          contentEncoding: 'gzip',
+          contentType: 'text/plain',
+          data: result,
+          statusCode: kcResponse.statusCode) as Future<WebResourceResponse?>;
+    } finally {
+      client.close();
+    }
+    return finalresult;
 
   }
   return null;
