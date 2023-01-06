@@ -25,18 +25,19 @@ void printUri(Uri input){
 void printRequestInfo(WebResourceRequest request) {
   print("==========");
   print("KCA Request Info:");
-  // print("KCA Request method:");
-  // print(request.method);
+  print("KCA Request method:");
+  print(request.method);
   print("KCA Request headers:");
   print(request.headers);
+  print("KCA Request isRedirect:");
+  print(request.isRedirect);
+  print("KCA Request isForMainFrame:");
+  print(request.isForMainFrame);
+  print("KCA Request hasGesture:");
+  print(request.hasGesture);
+
   print("KCA Request url:");
-  print(request.url);
-  // print("KCA Request isRedirect:");
-  // print(request.isRedirect);
-  // print("KCA Request isForMainFrame:");
-  // print(request.isForMainFrame);
-  // print("KCA Request hasGesture:");
-  // print(request.hasGesture);
+  printUri(request.url.uriValue);
   print("==========");
 }
 
@@ -48,65 +49,32 @@ Uint8List stringToUint8List(String s){
   var bytes = data.buffer.asUint8List();
   bytes.setRange(4, encodedLength+4, encodedString);
   return bytes;
-
 }
-
-Future<WebResourceResponse?> interceptRequest(
-    WebResourceRequest orgRequest) async {
-  printRequestInfo(orgRequest);
-  var kcResponse = await http.post(orgRequest.url, headers: orgRequest.headers);
-
-  print("==========");
-  print("KCA Response By http Info:");
-  print("KCA Response headers:");
-  print(kcResponse.headers);
-  print("KCA Response request:");
-  print(kcResponse.request);
-  print("KCA Response reasonPhrase:");
-  print(kcResponse.reasonPhrase);
-  print("KCA Response contentLength:");
-  print(kcResponse.contentLength);
-  print("KCA Response isRedirect:");
-  print(kcResponse.isRedirect);
-  print("KCA Response persistentConnection:");
-  print(kcResponse.persistentConnection);
-  print("KCA Response body:");
-  print(kcResponse.body);
-  print("KCA Response statusCode:");
-  print(kcResponse.statusCode);
-  print("==========");
-
-  return WebResourceResponse(
-      contentEncoding: 'gzip',
-      contentType: 'text/plain',
-      data: kcResponse.bodyBytes,
-      headers: kcResponse.headers,
-      reasonPhrase: kcResponse.reasonPhrase,
-      statusCode: kcResponse.statusCode);
-}
-
-
 
 Future<WebResourceResponse?> interceptRequestByDIO(
     WebResourceRequest orgRequest,Dio dio) async {
   printRequestInfo(orgRequest);
   Response kcResponse;
-  print("start dio");
-
   Options dioOptions = Options(
-    contentType: "application/x-www-form-urlencoded",
-    followRedirects: false,
-    headers: orgRequest.headers,
-    method: 'POST',
+    headers: orgRequest.headers
   );
+  final rawKey = orgRequest.headers.toString();
+  final regex = RegExp(r'^\&$');
+  final kcAPIKey = regex.firstMatch(rawKey);
+
+  String? realKey = kcAPIKey[0];
 
   try {
+    kcResponse = await dio.postUri(
+        orgRequest.url.uriValue,
+        options: dioOptions,
+      data: realKey,
+    );
     // kcResponse = await dio.post(
     //   orgRequest.url.toString(),
     //   options:dioOptions,
     // queryParameters: orgRequest.url.queryParameters,
     // data: orgRequest.url.authority);
-    kcResponse = await dio.postUri(orgRequest.url.uriValue,options: dioOptions);
   } on DioError catch (e) {
     // The request was made and the server responded with a status code
     if (e.response != null) {
@@ -145,12 +113,50 @@ Future<WebResourceResponse?> interceptRequestByDIO(
   // print("KCA Response requestOptions:");
   // print(kcResponse.requestOptions);
   print("==========");
+
   return WebResourceResponse(
-      contentEncoding: 'gzip',
-      contentType: 'text/plain',
-      data: stringToUint8List(kcResponse.data),
-      statusCode: kcResponse.statusCode,);
+    contentEncoding: 'gzip',
+    contentType: 'text/plain',
+    data: stringToUint8List(kcResponse.data),
+
+    reasonPhrase: kcResponse.statusMessage,
+    statusCode: kcResponse.statusCode,
+  );
 }
+
+// Future<WebResourceResponse?> interceptRequest(
+//     WebResourceRequest orgRequest) async {
+//   printRequestInfo(orgRequest);
+//   var kcResponse = await http.post(orgRequest.url, headers: orgRequest.headers);
+//
+//   print("==========");
+//   print("KCA Response By http Info:");
+//   print("KCA Response headers:");
+//   print(kcResponse.headers);
+//   print("KCA Response request:");
+//   print(kcResponse.request);
+//   print("KCA Response reasonPhrase:");
+//   print(kcResponse.reasonPhrase);
+//   print("KCA Response contentLength:");
+//   print(kcResponse.contentLength);
+//   print("KCA Response isRedirect:");
+//   print(kcResponse.isRedirect);
+//   print("KCA Response persistentConnection:");
+//   print(kcResponse.persistentConnection);
+//   print("KCA Response body:");
+//   print(kcResponse.body);
+//   print("KCA Response statusCode:");
+//   print(kcResponse.statusCode);
+//   print("==========");
+//
+//   return WebResourceResponse(
+//       contentEncoding: 'gzip',
+//       contentType: 'text/plain',
+//       data: kcResponse.bodyBytes,
+//       headers: kcResponse.headers,
+//       reasonPhrase: kcResponse.reasonPhrase,
+//       statusCode: kcResponse.statusCode);
+// }
 
 // Future<WebResourceResponse?> interceptRequestByHttpclient(
 //     WebResourceRequest orgRequest) async {

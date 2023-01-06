@@ -69,6 +69,7 @@ class _MyAppState extends State<MyApp> {
               onWebViewCreated: (InAppWebViewController controller) {
                 webViewController = controller;
               },
+
               shouldInterceptRequest: (
                 controller,
                 WebResourceRequest request,
