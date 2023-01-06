@@ -1,44 +1,10 @@
-import 'dart:collection';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
+import 'kcaHandler.dart';
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   WebView.debugLoggingSettings.enabled = false;
   runApp(const MaterialApp(home: MyApp()));
-}
-
-Future<WebResourceResponse?> interceptRequest(
-    WebResourceRequest request) async {
-  if (request.method == 'POST') {
-    if (request.url.path.contains('get_incentive')) {
-      return null;
-    }
-    var kcResponse = await http.post(request.url, headers: request.headers);
-    print("KCA");
-    print("URL");
-    print(request);
-
-    print("status:");
-    print(kcResponse.headers);
-    print(kcResponse.request);
-    print(kcResponse.reasonPhrase);
-    print(kcResponse.contentLength);
-    print(kcResponse.isRedirect);
-    print(kcResponse.persistentConnection);
-    print("body:");
-    print(kcResponse.body);
-    print("KCA END");
-    return WebResourceResponse(
-        contentEncoding: 'gzip',
-        contentType: 'text/plain',
-        data: kcResponse.bodyBytes,
-        headers: kcResponse.headers,
-        reasonPhrase: kcResponse.reasonPhrase,
-        statusCode: kcResponse.statusCode);
-  }
-  return null;
 }
 
 enum ProgressIndicatorType { circular, linear }
@@ -103,11 +69,13 @@ class _MyAppState extends State<MyApp> {
                 controller,
                 WebResourceRequest request,
               ) async {
-                //print('androidShouldInterceptRequest: $request');
                 if (request.url.path.contains("/kcsapi/")) {
-                  Future<WebResourceResponse?> temp = interceptRequest(request);
-                  print("Return custom");
-                  return null;
+                  //print('androidShouldInterceptRequest: $request');
+                  Future<WebResourceResponse?> customResponse = interceptRequest(request);
+                  if(customResponse!=null){
+                    print("KCA: Return customResponse");
+                    return customResponse;
+                  }
                 }
                 return null;
               },
