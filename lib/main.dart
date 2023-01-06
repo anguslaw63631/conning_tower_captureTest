@@ -1,3 +1,5 @@
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -28,7 +30,7 @@ class _MyAppState extends State<MyApp> {
   );
   InAppWebViewController? webViewController;
   double progress = 0;
-
+  var dio = Dio();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,17 +73,16 @@ class _MyAppState extends State<MyApp> {
                 controller,
                 WebResourceRequest request,
               ) async {
-                if (request.url.path.contains("/kcsapi/") ||
-                    !request.url.path.contains('get_incentive')) {
-                  //print('androidShouldInterceptRequest: $request');
-                  //Future<WebResourceResponse?> customResponse = interceptRequest(request);
-                  Future<WebResourceResponse?> customResponse =
-                      interceptRequestByDIO(request);
-                  //Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
-                  if (customResponse != null) {
+                if (request.url.path.contains("/kcsapi/")) {
+                    // if(request.url.path.contains('get_incentive')){
+                    //   return null;
+                    // }
+                    //print('androidShouldInterceptRequest: $request');
+                    //Future<WebResourceResponse?> customResponse = interceptRequest(request);
+                    Future<WebResourceResponse?> customResponse = interceptRequestByDIO(request,dio);
+                    //Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
                     print("KCA: Return customResponse");
                     return customResponse;
-                  }
                 }
                 return null;
               },
