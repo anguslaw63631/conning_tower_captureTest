@@ -1,8 +1,5 @@
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
 import 'kcaHandler.dart';
 
 Future main() async {
@@ -30,7 +27,6 @@ class _MyAppState extends State<MyApp> {
   );
   InAppWebViewController? webViewController;
   double progress = 0;
-  var dio = Dio();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +48,6 @@ class _MyAppState extends State<MyApp> {
                 icon: const Icon(Icons.refresh)),
             IconButton(
                 onPressed: () async {
-                  print("button");
                 },
                 icon: const Icon(Icons.account_circle))
           ],
@@ -65,24 +60,29 @@ class _MyAppState extends State<MyApp> {
               initialSettings: webViewSetting,
               initialUrlRequest: URLRequest(
                   url: WebUri(
-                      "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854/")),
+                      "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854")),
               onWebViewCreated: (InAppWebViewController controller) {
                 webViewController = controller;
               },
-
+              onLoadStop: (controller,uri){
+                print(uri);
+                if(uri.toString().contains("app_id=854854")){
+                  controller.injectJavascriptFileFromAsset(assetFilePath: "assets/js/gameAutoFitAndroid.js");
+                }
+              },
+              onConsoleMessage: (controll,message){
+                //Only print Kancolle data
+                if(message.message.contains("api_result")){
+                  print("console:$message");
+                }
+              },
               shouldInterceptRequest: (
                 controller,
                 WebResourceRequest request,
               ) async {
-                if (request.url.path.contains("/kcsapi/")) {
-                    // if(request.url.path.contains('get_incentive')){
-                    //   return null;
-                    // }
-                    //print('androidShouldInterceptRequest: $request');
-                    //Future<WebResourceResponse?> customResponse = interceptRequest(request);
-                    Future<WebResourceResponse?> customResponse = interceptRequestByDIO(request,dio);
-                    //Future<WebResourceResponse?> customResponse = interceptRequestByHttpclient(request);
-                    print("KCA: Return customResponse");
+                if (request.url.path.contains("/kcs2/js/main.js")) {
+                    print('androidShouldInterceptRequest: $request');
+                    Future<WebResourceResponse?> customResponse = interceptRequest(request);
                     return customResponse;
                 }
                 return null;

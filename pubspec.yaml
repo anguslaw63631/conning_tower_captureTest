@@ -1,5 +1,5 @@
-name: progress_indicator
-description: Add a progress indicator such as LinearProgressIndicator or CircularProgressIndicator while the WebView is loading.
+name: KanColleAPICapturetest
+description: Capture Kancolle API by flutter inappwebview.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -31,8 +31,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_inappwebview: ^6.0.0-beta.21
-  dio: ^4.0.6
+  flutter_inappwebview: ^6.0.0-beta.22
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -66,7 +65,8 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/js/main.js
+    - assets/js/jsBridge.js
+    - assets/js/gameAutoFitAndroid.js
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
