@@ -63,25 +63,34 @@ class _MyAppState extends State<MyApp> {
                       "https://www.dmm.com/netgame/social/application/-/detail/=/app_id=854854")),
               onWebViewCreated: (InAppWebViewController controller) {
                 webViewController = controller;
+                WebMessageListener kcListener= WebMessageListener(jsObjectName: "kcMessage",
+                    onPostMessage: (message, sourceOrigin, isMainFrame, replyProxy) {
+                      print("=======================================================");
+                      print("kc listener:");
+                      print(message);
+                      print("=======================================================");
+                    }
+                );
+                controller.addWebMessageListener(kcListener);
               },
               onLoadStop: (controller,uri){
-                print(uri);
                 if(uri.toString().contains("app_id=854854")){
+                  print("autoscale");
                   controller.injectJavascriptFileFromAsset(assetFilePath: "assets/js/gameAutoFitAndroid.js");
                 }
               },
               onConsoleMessage: (controll,message){
                 //Only print Kancolle data
-                if(message.message.contains("api_result")){
-                  print("console:$message");
-                }
+                // if(message.message.contains("api_result")){
+                //   print("console:$message");
+                // }
               },
               shouldInterceptRequest: (
                 controller,
                 WebResourceRequest request,
               ) async {
                 if (request.url.path.contains("/kcs2/js/main.js")) {
-                    print('androidShouldInterceptRequest: $request');
+                    // print('androidShouldInterceptRequest: $request');
                     Future<WebResourceResponse?> customResponse = interceptRequest(request);
                     return customResponse;
                 }
