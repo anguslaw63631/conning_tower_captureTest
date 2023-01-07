@@ -8,11 +8,14 @@ var origOpen = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function() {
     this.addEventListener('load', function() {
         if (this.responseURL.includes('/kcsapi/')) {
-            kcMessage.postMessage(this.responseText);
+            KcapiToFlutter(this);
         }
     });
     origOpen.apply(this, arguments);
 };
+function KcapiToFlutter(data) {
+    kcMessage.postMessage("conning_tower_responseURL:"+data.responseURL+"conning_tower_readyState:"+data.readyState+"conning_tower_responseText:"+data.responseText+"conning_tower_END");
+}
 
 ''';
 
@@ -25,20 +28,6 @@ Uint8List convertStringToUint8List(String str) {
 Future<WebResourceResponse?> interceptRequest(
     WebResourceRequest orgRequest) async {
     var kcResponse = await http.get(orgRequest.url, headers: orgRequest.headers);
-    // print("KCA");
-    // print("URL");
-    // print(orgRequest);
-    //
-    // print("status:");
-    // print(kcResponse.headers);
-    // print(kcResponse.request);
-    // print(kcResponse.reasonPhrase);
-    // print(kcResponse.contentLength);
-    // print(kcResponse.isRedirect);
-    // print(kcResponse.persistentConnection);
-    // print("body:");
-    // print(kcResponse.body);
-    // print("KCA END");
 
     String temp = kcResponse.body + interceptJS;
     return WebResourceResponse(

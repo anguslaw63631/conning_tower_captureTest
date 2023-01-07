@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'kcaHandler.dart';
+import 'dart:convert';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +10,40 @@ Future main() async {
 }
 
 enum ProgressIndicatorType { circular, linear }
+
+
+void kancolleMessageHandle(String message){
+
+  if(true){
+    const start = "conning_tower_responseURL:";
+    const end = "conning_tower_readyState:";
+    final startIndex = message.indexOf(start);
+    final endIndex = message.indexOf(end, startIndex + start.length);
+    String responseURL = message.substring(startIndex + start.length, endIndex);
+    print("responseURL:");
+    print(responseURL);
+  }
+  if(true){
+    const start = "conning_tower_readyState:";
+    const end = "conning_tower_responseText:";
+    final startIndex = message.indexOf(start);
+    final endIndex = message.indexOf(end, startIndex + start.length);
+    String responseReadyState = message.substring(startIndex + start.length, endIndex);
+    print("readyState:");
+    print(responseReadyState);
+  }
+  if(true){
+    const start = "conning_tower_responseText:";
+    const end = "conning_tower_END";
+    final startIndex = message.indexOf(start);
+    final endIndex = message.indexOf(end, startIndex + start.length);
+    String responseText = message.substring(startIndex + start.length, endIndex);
+    String result = responseText.replaceAll('svdata=', '');
+    print("KCA JSON:");
+    Map<String, dynamic> kcaJson = json.decode(result);
+    print(kcaJson);
+  }
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -65,10 +100,9 @@ class _MyAppState extends State<MyApp> {
                 webViewController = controller;
                 WebMessageListener kcListener= WebMessageListener(jsObjectName: "kcMessage",
                     onPostMessage: (message, sourceOrigin, isMainFrame, replyProxy) {
-                      print("=======================================================");
-                      print("kc listener:");
-                      print(message);
-                      print("=======================================================");
+                      // print("source");
+                      // print(sourceOrigin);
+                      kancolleMessageHandle(message!);
                     }
                 );
                 controller.addWebMessageListener(kcListener);
