@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'kcaHandler.dart';
-import 'dart:convert';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,47 +8,11 @@ Future main() async {
   runApp(const MaterialApp(home: MyApp()));
 }
 
-enum ProgressIndicatorType { circular, linear }
-
-
-void kancolleMessageHandle(String message){
-
-  if(true){
-    const start = "conning_tower_responseURL:";
-    const end = "conning_tower_readyState:";
-    final startIndex = message.indexOf(start);
-    final endIndex = message.indexOf(end, startIndex + start.length);
-    String responseURL = message.substring(startIndex + start.length, endIndex);
-    print("responseURL:");
-    print(responseURL);
-  }
-  if(true){
-    const start = "conning_tower_readyState:";
-    const end = "conning_tower_responseText:";
-    final startIndex = message.indexOf(start);
-    final endIndex = message.indexOf(end, startIndex + start.length);
-    String responseReadyState = message.substring(startIndex + start.length, endIndex);
-    print("readyState:");
-    print(responseReadyState);
-  }
-  if(true){
-    const start = "conning_tower_responseText:";
-    const end = "conning_tower_END";
-    final startIndex = message.indexOf(start);
-    final endIndex = message.indexOf(end, startIndex + start.length);
-    String responseText = message.substring(startIndex + start.length, endIndex);
-    String result = responseText.replaceAll('svdata=', '');
-    print("KCA JSON:");
-    Map<String, dynamic> kcaJson = json.decode(result);
-    print(kcaJson);
-  }
-}
-
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   State<MyApp> createState() => _MyAppState();
+
 }
 
 class _MyAppState extends State<MyApp> {
@@ -61,12 +24,11 @@ class _MyAppState extends State<MyApp> {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
   );
   InAppWebViewController? webViewController;
-  double progress = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("KanColle", style: const TextStyle(fontSize: 18)),
+          title: const Text("KanColle", style: TextStyle(fontSize: 18)),
           actions: [
             IconButton(
                 onPressed: () async {
@@ -81,10 +43,6 @@ class _MyAppState extends State<MyApp> {
                   await webViewController?.reload();
                 },
                 icon: const Icon(Icons.refresh)),
-            IconButton(
-                onPressed: () async {
-                },
-                icon: const Icon(Icons.account_circle))
           ],
         ),
         body: Column(children: <Widget>[
@@ -100,8 +58,6 @@ class _MyAppState extends State<MyApp> {
                 webViewController = controller;
                 WebMessageListener kcListener= WebMessageListener(jsObjectName: "kcMessage",
                     onPostMessage: (message, sourceOrigin, isMainFrame, replyProxy) {
-                      // print("source");
-                      // print(sourceOrigin);
                       kancolleMessageHandle(message!);
                     }
                 );
@@ -113,18 +69,11 @@ class _MyAppState extends State<MyApp> {
                   controller.injectJavascriptFileFromAsset(assetFilePath: "assets/js/gameAutoFitAndroid.js");
                 }
               },
-              onConsoleMessage: (controll,message){
-                //Only print Kancolle data
-                // if(message.message.contains("api_result")){
-                //   print("console:$message");
-                // }
-              },
               shouldInterceptRequest: (
                 controller,
                 WebResourceRequest request,
               ) async {
                 if (request.url.path.contains("/kcs2/js/main.js")) {
-                    // print('androidShouldInterceptRequest: $request');
                     Future<WebResourceResponse?> customResponse = interceptRequest(request);
                     return customResponse;
                 }
@@ -135,3 +84,4 @@ class _MyAppState extends State<MyApp> {
         ]));
   }
 }
+
